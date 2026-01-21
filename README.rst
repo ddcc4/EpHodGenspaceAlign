@@ -15,33 +15,16 @@ Weights of EpHod model and training datasets are available at `Zenodo <https://d
 Usage 
 -------------
 
-1. Clone repository and install conda environment. Installation with the 
-required environment takes roughly four minutes.
+Conda is too annoying. Here's a quicker way to get this running:
 
 .. code:: shell-session
 
-    git clone https://github.com/jafetgado/EpHod.git
-    cd EpHod
-    conda env create -f ./env.yml -p ./env
-    conda activate ./env
-..
-    	
-2. Predict pHopt with EpHod. Predicted pHopt values, and attention weights from the RLATtr model, as well as the embeddings from the final RLATtr layer (2560-dim) are saved in ``./example/``. Pass 0 to ``--save_attention_weights`` 
-and ``--save_embeddings`` to avoid writing the weights and embeddings output. 
-Besides downloading model weights, which may take several minutues, with a batch size of 1, prediction takes ~7 seconds/sequence on a CPU and ~0.1 seconds/sequence on a GPU.
+  pip install numpy pandas torch scikit-learn fair-esm tqdm
 
-.. code:: shell-session
-
-    python ./ephod/run.py \
-        --fasta_path "./example/test_sequences.fasta" \
-        --save_dir ./example \
-        --csv_name prediction.csv \
-        --verbose 1 \
-        --save_attention_weights 0 \
-        --save_embeddings 0 
+  python ephod/run.py --csv_path=path/to/predictive-pet-zero-shot-test-2025.csv
 ..
 
-
+The output will be in a file called ``prediction.csv``
 
 
 Citation

@@ -1,21 +1,20 @@
 """
 Run EpHod to predict pHopt for enzyme sequences
 """
+# Local setup:
+# pip install numpy pandas torch scikit-learn fair-esm tqdm
 
 
+import csv
 import numpy as np
 import pandas as pd
-from sklearn.svm import SVR
 import torch
-from torch.nn.parallel import DataParallel
-import torch.nn as nn
 import random
 import tqdm
 import argparse
 import joblib
 import os
 import sys
-import subprocess
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -31,8 +30,8 @@ def parse_arguments():
     '''Parse command-line training arguments'''
     
     parser = argparse.ArgumentParser(description="Predict pHopt of enzymes with EpHod")
-    parser.add_argument('--fasta_path', type=str,  
-                        help='Path to fasta file of enzyme sequences')
+    parser.add_argument('--csv_path', type=str,
+                        help='Path to CSV file of enzyme sequences')
     parser.add_argument('--save_dir', type=str, default='./',
                         help='Directory to which prediction results will be written')
     parser.add_argument('--csv_name', type=str, default='prediction.csv', 
@@ -209,14 +208,21 @@ def main():
     args = parse_arguments()
     
     # Read enzyme sequence data
-    assert os.path.exists(args.fasta_path), f"File not found in {args.fasta_path}"
-    headers, sequences = read_fasta(args.fasta_path)
-    accessions = [head.split()[0] for head in headers]
-    headers, sequences, accessions = [np.array(item) for item in (headers, sequences, accessions)]
-    assert len(accessions) == len(headers) == len(sequences), 'Fasta file has unequal headers and sequences'
+
+    # Hack the code to read from the file that Align gave us instead of FASTA:
+    assert os.path.exists(args.csv_path), f"File not found in {args.csv_path}"
+    with open(args.csv_path) as csvfile:
+        csv_reader = csv.reader(csvfile)
+        next(csv_reader)
+        sequences = [csv_row[0] for csv_row in csv_reader]
+        # sequences = sequences[0:1]  # just do first one
+        accessions = [  # make up a name (accession) for each sequence
+            f'petase{i}' for i in range(1, len(sequences)+1)
+        ]
+
     numseqs = len(sequences)
     if args.verbose:
-        print(f'Reading {numseqs} sequences from {args.fasta_path}')
+        print(f'Reading {numseqs} sequences from {args.csv_path}')
         
     # Check sequence lengths
     lengths = np.array([len(seq) for seq in sequences])
